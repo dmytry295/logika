@@ -1,5 +1,13 @@
 from PyQt5.QtCore import*
 from PyQt5.QtWidgets import*
+import json
+
+
+def writeToFile():   
+    with open("notes.json","w") as file:
+        json.dump(notes, file,sort_keys=True)
+
+
 #--------------------
 # Вікно програми
 #--------------------
@@ -94,11 +102,77 @@ layout_note.addLayout(col2)
 
 window.setLayout(layout_note)
 
+#  отримуємо текст із замітки з виділеною назвою та відображаємо його в полі редагування
+def show_notes():
+    global key                                                # назва замітки - ключ
+    key = list_widget_1.selectedItems()[0].text()     # дізнаємось на яку записку клікнули
+    list_widget_2.clear()                             # очищаємо поле із тегами
+    text_editor.setText(notes[key]["text"])           # відобразили текст замітки
+    list_widget_2.addItems(notes[key]["tag"])         # відобразили теги замітки
+
+
+def add_notes():
+    note_name,ok  = QInputDialog.getText(window,"Додати замітку","Назва замітки:")
+    if note_name and ok:
+        list_widget_1.addItems(note_name)
+        notes[note_name]= {"text":"","tag":""}
+    writeToFile()
+
+def delete_notes():
+    if list_widget_1.currentItem():
+        if key in notes:
+            notes.pop(key)
+        
+        text_editor.clear()
+        list_widget_1.clear()
+        list_widget_2.clear()
+        
+        list_widget_1.addItems(notes)
+        writeToFile()
+
+def save_notes():
+    if list_widget_1.currentItem():
+        key = list_widget_1.currentItem().text()
+        notes["text"] = text_editor.toPlainText()
+        writeToFile()
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Підключаєм функцію віджету
+list_widget_1.clicked.connect(show_notes)
+make_note.clicked.connect(add_notes)
+delet_note.clicked.connect(delete_notes)
+save_note.clicked.connect(save_notes)
+
+
+
+
+
+# Зчитуємо файл
+with open("notes.json","r") as file:
+    notes = json.load(file)
+list_widget_1.addItems(notes)
 
 
 
